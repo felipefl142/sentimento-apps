@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Dados (gerados pelo pipeline) - nao versionar
+data/bronze/**
+data/silver/**
+data/gold/**
+data/monitoring/**
+!data/**/.gitkeep
+
+# MLflow (tracking sqlite + artefatos)
+mlflow.db
+mlartifacts/
+mlruns/
+
+# Ambiente
+.env
+
+# IDE / SO
+.idea/
+.vscode/
+.DS_Store
+*.log
+
+# Relatorios gerados
+reports/*.json

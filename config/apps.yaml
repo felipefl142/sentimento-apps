@@ -1,0 +1,15 @@
+# Apps monitorados na Google Play (pt-BR). A chave e o identificador usado em todo o pipeline.
+lang: pt
+country: br
+apps:
+  nubank:        {package: com.nu.production,     nome: Nubank}
+  ifood:         {package: br.com.brainweb.ifood, nome: iFood}
+  mercadolivre:  {package: com.mercadolibre,      nome: Mercado Livre}
+  govbr:         {package: br.gov.meugovbr,       nome: gov.br}
+  whatsapp:      {package: com.whatsapp,          nome: WhatsApp}
+
+ingest:
+  page_size: 1000       # reviews por chamada (a lib pagina de 200 em 200 por dentro)
+  revision_days: 7      # incremental re-coleta os ultimos N dias (reviews editadas mudam `at`)
+  backfill_days: 365    # primeira coleta / --full: ate N dias atras...
+  max_backfill: 80000   # ...ou ate N reviews por app (o que vier primeiro)

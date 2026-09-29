@@ -1,0 +1,69 @@
+# Rotulo a partir das estrelas: 1-2 neg, 3 neu, 4-5 pos
+labels: [neg, neu, pos]
+
+split:
+  test_days: 30         # ultimos N dias do silver
+  valid_days: 30        # N dias antes do test (escolha de C / early stopping)
+
+primary_metric: macro_f1
+gate_tolerance: 0.005   # candidato vira champion se F1 >= F1 do champion (no MESMO test) - tol
+
+candidates:
+  tfidf_lr:
+    C_grid: [0.5, 1.0, 2.0]    # C=0.25..4 ficou todo em +-0.006 de macro-F1 no valid
+    word_max_features: 150000
+    char_max_features: 200000
+    cap_per_app_class: 15000   # teto de linhas de treino por app x classe
+  xlmr_zeroshot:
+    model_id: cardiffnlp/twitter-xlm-roberta-base-sentiment
+    max_len: 128
+    batch_size: 256
+  bertimbau_ft:
+    model_id: neuralmind/bert-base-portuguese-cased
+    max_len: 128
+    batch_size: 32
+    epochs: 3
+    lr: 3.0e-5
+    warmup: 0.06
+    weight_decay: 0.01
+    patience: 1
+    cap_per_app_class: 6000    # fine-tune em ~15 min na RTX 3070
+    eval_batch_size: 256
+
+serving:
+  batch_size: 256
+
+terms:
+  background_days: 90   # janela de referencia dos termos emergentes
+  recent_days: 7
+  top_n: 25
+  min_df: 3
+  min_z: 2.0            # emergente so com z >= min_z (abaixo disso e ruido de contagem)
+
+topics:
+  days: 30
+  k: 6
+  min_docs: 200
+  top_terms: 8
+  # adjetivos de sentimento e nomes dos apps viram "topicos" genericos (pessimo, lixo...) ->
+  # fora so do NMF (os termos por log-odds continuam com eles)
+  extra_stopwords: [pessimo, pessima, horrivel, ruim, lixo, pior, bom, boa, otimo, otima,
+                    gostei, demais, nada, porque, agora, sempre, toda, hora, dia, dias, hoje,
+                    whatsapp, zap, ifood, nubank, nu, mercado, livre, gov, governo, banco,
+                    consigo, conseguindo, funciona, funcionando, problema, problemas, nunca]
+
+alerts:
+  window: 28            # mediana/MAD movel dos dias anteriores
+  min_n: 30             # reviews minimas no dia
+  z: 3.5
+  min_delta: 0.05       # aumento minimo (absoluto) do % negativo sobre a mediana
+  volume_z: 3.5
+
+monitoring:
+  recent_days: 14
+  min_live_n: 300
+  f1_drop: 0.03         # queda do macro-F1 ao vivo vs test que recomenda retreino
+  label_psi: 0.2
+  js_threshold: 0.1     # divergencia JS de unigramas recente x treino
+  max_model_age_days: 30
+  stale_days: 3         # app sem review nova ha N dias -> aviso
